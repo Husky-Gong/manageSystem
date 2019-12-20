@@ -2,7 +2,10 @@ package manageSystem;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Hashtable;
 
 public class systemUtils implements manageSystem{
@@ -41,16 +44,39 @@ public class systemUtils implements manageSystem{
 		}
 	}
 	
+	private static void writeUserObj(user newUser, File finalPath) throws IOException {
+		try(FileOutputStream fileOut = new FileOutputStream(finalPath);
+				ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
+				){
+			objOut.writeObject(newUser);
+		}
+	}
+	
+	/*
+	 * input a user object as one parameter
+	 * check whether this user exists or not
+	 * serialize the new user object into the 'users' folder
+	 */
+	@Override
+	public void register(user newUser) {
+		String newUserName = newUser.getUserName();
+		if(userTable.containsKey(newUserName)) System.out.println("This username exists!");
+		else {
+			File finalPath = new File(new File("users"),newUser.getUserName());
+			try{
+				writeUserObj(newUser, finalPath);}
+			catch(Exception e) {
+				e.printStackTrace();
+				}
+			}
+		}
+	
+	
 	@Override
 	public void login() {
-		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
-	public void register(user newUser) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 }
