@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Hashtable;
+import java.util.Scanner;
 
 public class systemUtils implements manageSystem{
 
@@ -72,9 +73,28 @@ public class systemUtils implements manageSystem{
 		}
 	
 	
+	/*
+	 * Ask for user information
+	 * (we can use the userTable to help us check user object)
+	 * 1. check userName
+	 * 2. check password
+	 * 3. return true or false
+	 */
 	@Override
 	public void login() {
+		Scanner input = new Scanner(System.in);
+		System.out.println("Your username: ");
+		String userName = input.next();
+		System.out.println("Your password: ");
+		String passWord = input.next();
 		
+		if(userTable.containsKey(userName) && userTable.get(userName).getPassWord().equals(passWord)) {
+			System.out.println("Login successfully.");
+		}
+		else {
+			System.out.println("Wrong userName or passWord!");
+		}
+		input.close();
 	}
 
 	
