@@ -7,12 +7,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Scanner;
 
 public class systemUtils implements manageSystem{
 
 	private static Hashtable<String, user> userTable = new Hashtable<>();
 	private static Hashtable<String, item> itemTable = new Hashtable<>();
+	private static Hashtable<String, Integer> shopCart = new Hashtable<>();
 	
 	static {
 		/*
@@ -107,9 +109,65 @@ public class systemUtils implements manageSystem{
 		input.close();
 	}
 	
+	/*
+	 * print items in shopping cart and 
+	 * ask whether continue shopping or
+	 * delete items
+	 */
 	@Override
-	public int shopCart() {
-		return 4;
+	public void shopCart() {
+		printItems();
+		System.out.println("1 : Continue shopping\n2 : Delete items.");
+		try(Scanner input = new Scanner(System.in);){
+			int choice = input.nextInt();
+			if(choice == 1) 
+		}catch(Exception e) {
+			System.out.println("Invalid input");
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	/*
+	 * add items into shopping cart
+	 */
+	private void buyItems() {
+		!!这里要加打印所有商品的列表
+		
+		System.out.println("Which one you want to buy? input its name:");
+		Scanner input = new Scanner(System.in);
+		String itemName = input.next();
+		System.out.println("How many you want?");
+		int amount = input.nextInt();
+		
+		// get total number of one item in shopping cart and 
+		// check whether has enough items to sell
+		int totalNum = shopCart.get(itemName) + amount;
+
+		if(!itemTable.containsKey(itemName)) System.out.println("No such item!");
+		
+		else if(itemTable.containsKey(itemName) && itemTable.get(itemName).getAmount() < totalNum) System.out.println("No enough items!");
+		else {
+			System.out.println("Items added successfully!");
+		}
+		
+	}
+	
+	
+	/*
+	 * Print all items in user's shopping cart
+	 * Print total price
+	 */
+	@Override
+	public void printItems() {
+		System.out.println("------Items in your shopping cart------");
+		double inTotal = 0.0;
+		for(Map.Entry<String, Integer> item: shopCart.entrySet()) {
+			inTotal += itemTable.get(item.getKey()).getPrice() * item.getValue();
+			System.out.println(item);
+		}
+		System.out.println("Total Price : " + inTotal);
 	}
 	
 	@Override
