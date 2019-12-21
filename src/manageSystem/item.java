@@ -1,6 +1,7 @@
 package manageSystem;
 
 public class item {
+	private String itemName;
 	private int amount;
 	private double price;
 	@Override
@@ -8,6 +9,7 @@ public class item {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + amount;
+		result = prime * result + ((itemName == null) ? 0 : itemName.hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(price);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -24,9 +26,20 @@ public class item {
 		item other = (item) obj;
 		if (amount != other.amount)
 			return false;
+		if (itemName == null) {
+			if (other.itemName != null)
+				return false;
+		} else if (!itemName.equals(other.itemName))
+			return false;
 		if (Double.doubleToLongBits(price) != Double.doubleToLongBits(other.price))
 			return false;
 		return true;
+	}
+	public String getItemName() {
+		return itemName;
+	}
+	public void setItemName(String itemName) {
+		this.itemName = itemName;
 	}
 	public int getAmount() {
 		return amount;
