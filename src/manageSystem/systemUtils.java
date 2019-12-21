@@ -12,20 +12,30 @@ import java.util.Scanner;
 public class systemUtils implements manageSystem{
 
 	private static Hashtable<String, user> userTable = new Hashtable<>();
+	private static Hashtable<String, item> itemTable = new Hashtable<>();
 	
 	static {
 		/*
-		 * 1. Check 'users' folder -- create or not?
-		 * 2. loop the 'users' folder and deserialize all users from every user file
-		 * 3. get every user object and store into the 'userTable' (Hashtable.put(key, value))
+		 * 1. Check 'users'/'items' folder -- create or not?
+		 * 2. loop the 'users'/'items' folder and deserialize all users/items from every user/item file
+		 * 3. get every user/item object and store into the 'userTable'/'itemTable' (Hashtable.put(key, value))
 		 */
 		File file = new File("users");
+		File file2 = new File("items");
+		
 		if(!file.exists()) file.mkdir();
+		if(!file2.exists()) file2.mkdir();
 		
 		try{
+			File fullItemsList[] = file2.listFiles();
+			for(File itemsFile: fullItemsList) {
+				item eachItem = getObj(itemsFile.getAbsolutePath());
+				itemTable.put(eachItem.getItemName(), eachItem);
+			}
+			
 			File fullFileList[] = file.listFiles();
 			for(File userFile: fullFileList) {
-				user eachUser = getUserObj(userFile.getAbsolutePath());
+				user eachUser = getObj(userFile.getAbsolutePath());
 				userTable.put(eachUser.getUserName(), eachUser);
 			}
 		}catch(Exception e) {
@@ -33,12 +43,12 @@ public class systemUtils implements manageSystem{
 		}
 	}
 	
-	private static user getUserObj(String filePath) {
+	@SuppressWarnings("unchecked")
+	private static <T> T getObj(String filePath) {
 		try(FileInputStream fileIn = new FileInputStream(filePath);
 				ObjectInputStream objIn = new ObjectInputStream(fileIn);
 				){
-			user userObj = (user) objIn.readObject();
-			return userObj;
+			return (T) objIn.readObject();
 		}catch(Exception e) {
 			e.printStackTrace();
 			return null;
@@ -96,7 +106,15 @@ public class systemUtils implements manageSystem{
 		}
 		input.close();
 	}
-
 	
+	@Override
+	public int shopCart() {
+		return 4;
+	}
+	
+	@Override
+	public void purchaseItems(int price) {
+		
+	}
 
 }
