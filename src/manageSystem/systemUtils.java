@@ -164,7 +164,7 @@ public class systemUtils implements manageSystem{
 		while(true) {
 			printItemsTable();
 			Scanner input = new Scanner(System.in);
-			System.out.println("1 : Shop.\n2 : Delete items.\n3. Manager Model.\n4. Exit.\n******************\n");
+			System.out.println("1 : Shop.\n2 : Cancel items.\n3. Manager Model.\n4. Exit.\n******************\n");
 			int choice = input.nextInt();
 			if(choice == 1) buyItems(); 
 			else if(choice == 2)cancelItems();
@@ -221,6 +221,7 @@ public class systemUtils implements manageSystem{
 		}
 		
 		try {
+			itemTable.put(itemName, newItem);
 			writeObj(newItem, finalPath);
 		} catch (IOException e) {
 			System.out.println("Error!");
@@ -279,7 +280,7 @@ public class systemUtils implements manageSystem{
 		if(!shopCart.containsKey(itemName)) System.out.println("No such items!");
 		else if(shopCart.containsKey(itemName) && shopCart.get(itemName) <= amount) System.out.println("Invalid amount!");
 		else {
-			updateTables(itemName,amount);
+			updateTables(itemName,-amount);
 			System.out.println("Items deleted successfully!");
 		}
 		printShopCart();
@@ -299,11 +300,17 @@ public class systemUtils implements manageSystem{
 		
 		// get total number of one item in shopping cart and 
 		// check whether has enough items to sell
-		int totalNum = shopCart.get(itemName) + amount;
+		int totalNum;
+		if(shopCart.get(itemName)==null) 
+			totalNum = 0 + amount;
+		else 
+			totalNum = shopCart.get(itemName) + amount;
 
-		if(!itemTable.containsKey(itemName)) System.out.println("No such item!");
+		if(!itemTable.containsKey(itemName)) 
+			System.out.println("No such item!");
 		
-		else if(itemTable.containsKey(itemName) && itemTable.get(itemName).getAmount() < totalNum) System.out.println("No enough items!");
+		else if(itemTable.containsKey(itemName) && itemTable.get(itemName).getAmount() < totalNum) 
+			System.out.println("No enough items!");
 		else {
 			updateTables(itemName, amount);
 			System.out.println("Items added successfully!");
@@ -316,10 +323,24 @@ public class systemUtils implements manageSystem{
 	 * then update item Hash table
 	 */
 	private void updateTables(String itemName, int amount) {
-		itemTable.get(itemName).setAmount(itemTable.get(itemName).getAmount() + amount);
-		if(!shopCart.containsKey(itemName)) shopCart.put(itemName, 0);
-		else {
+		itemTable.get(itemName).setAmount(itemTable.get(itemName).getAmount() - amount);
+		// if to buy things
+		if(!shopCart.containsKey(itemName) && amount >= 0) 
+			shopCart.put(itemName, amount);
+		// if to cancel things
+		else if(!shopCart.containsKey(itemName) && amount <= 0) 
+			System.out.println("No such items!");
+		else if(shopCart.containsKey(itemName) && shopCart.get(itemName)+amount <0) 
+			System.out.println("Exceeds amount limit!");
+		else if(shopCart.containsKey(itemName) && shopCart.get(itemName) + amount >= 0) 
 			shopCart.put(itemName, shopCart.get(itemName)+amount);
+		
+		//Update file information
+		try {
+			writeObj(itemTable.get(itemName),new File(new File("items"),itemName));
+		} catch (IOException e) {
+			System.out.println("Error!");
+			e.printStackTrace();
 		}
 	}
 	
