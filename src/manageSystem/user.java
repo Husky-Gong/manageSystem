@@ -12,12 +12,13 @@ public class user implements Serializable{
 	private boolean manager;
 	
 
-	public user(int id, String userName, String passWord, int userAge) {
+	public user(int id, String userName, String passWord, int userAge, boolean manager) {
 		super();
 		this.id = id;
 		this.userName = userName;
 		this.passWord = passWord;
 		this.userAge = userAge;
+		this.manager = manager;
 	}
 
 	public int getId() {

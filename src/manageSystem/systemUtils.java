@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 
 public class systemUtils implements manageSystem{
-
 	private static Hashtable<String, user> userTable = new Hashtable<>();
 	private static Hashtable<String, item> itemTable = new Hashtable<>();
 	private static Hashtable<String, Integer> shopCart = new Hashtable<>();
@@ -39,7 +38,7 @@ public class systemUtils implements manageSystem{
      
 		
 		try{
-			if(!file.exists()) file.mkdir();
+			if(!file2.exists()) file2.mkdir();
 			else {
 				File fullItemsList[] = file2.listFiles(filter);
 				for(File itemsFile: fullItemsList) {
@@ -48,7 +47,12 @@ public class systemUtils implements manageSystem{
 				}
 			}
 			
-			if(!file2.exists()) file2.mkdir();
+			// initialize "user" folder and add "manager" into this repository.
+			if(!file.exists()) {
+				file.mkdir();
+				user manager = new user(0, "manager", "abcdef", 30, true);
+				writeObj(manager,new File(new File("users"),"manager"));
+			}
 			else {
 				File fullFileList[] = file.listFiles(filter);
 				for(File userFile: fullFileList) {
@@ -56,6 +60,7 @@ public class systemUtils implements manageSystem{
 					userTable.put(eachUser.getUserName(), eachUser);
 				}
 			}
+			
 			
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -96,7 +101,7 @@ public class systemUtils implements manageSystem{
 			System.out.println("Your age:");
 			int age = input.nextInt();
 			
-			user newUser = new user(userTable.size()+1,newName,password,age);
+			user newUser = new user(userTable.size()+1,newName,password,age,false);
 			try{
 				writeObj(newUser, finalPath);
 			}
@@ -174,14 +179,21 @@ public class systemUtils implements manageSystem{
 	private void managerModel() {
 		try(Scanner input = new Scanner(System.in)){
 			if(userTable.get(curUser).isManager()) {
-				printItemsTable();
-				System.out.println("------Manage Model------\n1. Add items\n2. Delete items\n3. Go back.");
-				int choice = input.nextInt();
-				if(choice == 1) addItems();
-				else if(choice == 2) deleteItems();
-				else return;
+				while(true) {
+					printItemsTable();
+					System.out.println("------Manage Model------\n1. Add items\n2. Delete items\n3. Go back.");
+					int choice = input.nextInt();
+					if(choice == 1) addItems();
+					else if(choice == 2) deleteItems();
+					else break;
+				}
 			}
-			else return;
+			
+			else{
+				System.out.println("You are not a manager!");
+			}
+			
+			return;
 		}
 	}
 	
