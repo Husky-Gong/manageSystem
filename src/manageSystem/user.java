@@ -9,7 +9,9 @@ public class user implements Serializable{
 	private String userName;
 	private String passWord;
 	private int userAge;
+	private boolean manager;
 	
+
 	public user(int id, String userName, String passWord, int userAge) {
 		super();
 		this.id = id;
@@ -49,17 +51,28 @@ public class user implements Serializable{
 	public void setUserAge(int userAge) {
 		this.userAge = userAge;
 	}
+	
+	public boolean isManager() {
+		return manager;
+	}
+
+	public void setManager(boolean manager) {
+		this.manager = manager;
+	}
 
 	@Override
 	public String toString() {
-		return "user [id=" + id + ", userName=" + userName + ", passWord=" + passWord + ", userAge=" + userAge + "]";
+		return "user [id=" + id + ", userName=" + userName + ", passWord=" + passWord + ", userAge=" + userAge
+				+ ", manager=" + manager + "]";
 	}
+	
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + id;
+		result = prime * result + (manager ? 1231 : 1237);
 		result = prime * result + ((passWord == null) ? 0 : passWord.hashCode());
 		result = prime * result + userAge;
 		result = prime * result + ((userName == null) ? 0 : userName.hashCode());
@@ -76,6 +89,8 @@ public class user implements Serializable{
 			return false;
 		user other = (user) obj;
 		if (id != other.id)
+			return false;
+		if (manager != other.manager)
 			return false;
 		if (passWord == null) {
 			if (other.passWord != null)
