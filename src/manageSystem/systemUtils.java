@@ -102,6 +102,8 @@ public class systemUtils implements manageSystem{
 			int age = input.nextInt();
 			
 			user newUser = new user(userTable.size()+1,newName,password,age,false);
+			userTable.put(newName,newUser);
+			
 			try{
 				writeObj(newUser, finalPath);
 			}
@@ -157,18 +159,17 @@ public class systemUtils implements manageSystem{
 	 * delete items
 	 */
 	@Override
+	@SuppressWarnings("resource")
 	public void shopCart() {
-		printItemsTable();
-		System.out.println("1 : Shop.\n2 : Delete items.\n3. Manager Model.\n4. Exit.");
-		try(Scanner input = new Scanner(System.in);){
+		while(true) {
+			printItemsTable();
+			Scanner input = new Scanner(System.in);
+			System.out.println("1 : Shop.\n2 : Delete items.\n3. Manager Model.\n4. Exit.\n******************\n");
 			int choice = input.nextInt();
 			if(choice == 1) buyItems(); 
 			else if(choice == 2)cancelItems();
 			else if(choice == 3)managerModel();
 			else System.exit(0);
-		}catch(Exception e) {
-			System.out.println("Invalid input");
-			e.printStackTrace();
 		}
 	}
 	
@@ -176,25 +177,23 @@ public class systemUtils implements manageSystem{
 	 * help manager add items or
 	 * delete items
 	 */
+	@SuppressWarnings("resource")
 	private void managerModel() {
-		try(Scanner input = new Scanner(System.in)){
-			if(userTable.get(curUser).isManager()) {
-				while(true) {
-					printItemsTable();
-					System.out.println("------Manage Model------\n1. Add items\n2. Delete items\n3. Go back.");
-					int choice = input.nextInt();
-					if(choice == 1) addItems();
-					else if(choice == 2) deleteItems();
-					else break;
-				}
+		Scanner input = new Scanner(System.in);
+		if(userTable.get(curUser).isManager()) {
+			while(true) {
+				printItemsTable();
+				System.out.println("------Manage Model------\n1. Add items\n2. Delete items\n3. Go back.");
+				int choice = input.nextInt();
+				if(choice == 1) addItems();
+				else if(choice == 2) deleteItems();
+				else break;
 			}
-			
-			else{
-				System.out.println("You are not a manager!");
-			}
-			
-			return;
 		}
+		else{
+			System.out.println("You are not a manager!");
+		}
+		return;
 	}
 	
 	@SuppressWarnings("resource")

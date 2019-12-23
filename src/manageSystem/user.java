@@ -2,8 +2,13 @@ package manageSystem;
 
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
 public class user implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3982901843477642615L;
+	
 	
 	private int id;
 	private String userName;

@@ -2,9 +2,16 @@ package manageSystem;
 
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
 public class item implements Serializable{
-	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4884109449128435659L;
+
+	@Override
+	public String toString() {
+		return "item [itemName=" + itemName + ", amount=" + amount + ", price=" + price + "]";
+	}
 	private String itemName;
 	private int amount;
 	private double price;
