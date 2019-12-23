@@ -1,6 +1,7 @@
 package manageSystem;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,26 +27,53 @@ public class systemUtils implements manageSystem{
 		File file = new File("users");
 		File file2 = new File("items");
 		
-		if(!file.exists()) file.mkdir();
-		if(!file2.exists()) file2.mkdir();
+		// Define a filter to filter file ".DS_Store"
+		FileFilter filter = new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+            	if(pathname.getName().endsWith("DS_Store")) return false;
+            	else return true;
+            }
+         };
+     
 		
 		try{
-			File fullItemsList[] = file2.listFiles();
-			for(File itemsFile: fullItemsList) {
-				item eachItem = getObj(itemsFile.getAbsolutePath());
-				itemTable.put(eachItem.getItemName(), eachItem);
+			if(!file.exists()) file.mkdir();
+			else {
+				File fullItemsList[] = file2.listFiles(filter);
+				for(File itemsFile: fullItemsList) {
+					item eachItem = getObj(itemsFile.getAbsolutePath());
+					itemTable.put(eachItem.getItemName(), eachItem);
+				}
 			}
 			
-			File fullFileList[] = file.listFiles();
-			for(File userFile: fullFileList) {
-				user eachUser = getObj(userFile.getAbsolutePath());
-				userTable.put(eachUser.getUserName(), eachUser);
+			if(!file2.exists()) file2.mkdir();
+			else {
+				File fullFileList[] = file.listFiles(filter);
+				for(File userFile: fullFileList) {
+					user eachUser = getObj(userFile.getAbsolutePath());
+					userTable.put(eachUser.getUserName(), eachUser);
+				}
 			}
+			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	
+	
+	@SuppressWarnings("unchecked")
+	private static <T> T getObj(String filePath) {
+		try(FileInputStream fileIn = new FileInputStream(filePath);
+				ObjectInputStream objIn = new ObjectInputStream(fileIn);
+				){
+			return (T) objIn.readObject();
+		}catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	/*
 	 * input a user object as one parameter
@@ -68,7 +96,10 @@ public class systemUtils implements manageSystem{
 			
 			user newUser = new user(userTable.size()+1,newName,password,age);
 			
+			
+			
 			try{
+				System.out.println("here");
 				writeUserObj(newUser, finalPath);}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -116,17 +147,7 @@ public class systemUtils implements manageSystem{
 	}
 	
 	
-	@SuppressWarnings("unchecked")
-	private static <T> T getObj(String filePath) {
-		try(FileInputStream fileIn = new FileInputStream(filePath);
-				ObjectInputStream objIn = new ObjectInputStream(fileIn);
-				){
-			return (T) objIn.readObject();
-		}catch(Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+	
 	
 	
 	/*
@@ -137,11 +158,12 @@ public class systemUtils implements manageSystem{
 	@Override
 	public void shopCart() {
 		printItemsTable();
-		System.out.println("1 : Shop.\n2 : Delete items.");
+		System.out.println("1 : Shop.\n2 : Delete items.\n3. Exit.");
 		try(Scanner input = new Scanner(System.in);){
 			int choice = input.nextInt();
 			if(choice == 1) buyItems(); 
-			else deleteItems();
+			else if(choice == 2)deleteItems();
+			else System.exit(0);
 		}catch(Exception e) {
 			System.out.println("Invalid input");
 			e.printStackTrace();

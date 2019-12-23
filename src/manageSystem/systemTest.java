@@ -4,7 +4,6 @@ import java.util.Scanner;
 
 public class systemTest {
 	public static void main(String[] args) {
-		@SuppressWarnings("resource")
 		Scanner input = new Scanner(System.in);
 		systemUtils utl = new systemUtils();
 		
@@ -13,8 +12,7 @@ public class systemTest {
 			int choice = input.nextInt();
 			if(choice == 1) utl.register();
 			else if(choice ==2) {
-				boolean login = utl.login();
-				if(login) break;
+				if(utl.login()) break;
 			}
 			else {
 				System.out.println("Goodbye~");
@@ -22,5 +20,7 @@ public class systemTest {
 			}
 		}
 		
+		utl.shopCart();
+		input.close();
 	}
 }

@@ -1,6 +1,10 @@
 package manageSystem;
 
-public class user {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class user implements Serializable{
+	
 	private int id;
 	private String userName;
 	private String passWord;

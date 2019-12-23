@@ -1,6 +1,10 @@
 package manageSystem;
 
-public class item {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class item implements Serializable{
+	
 	private String itemName;
 	private int amount;
 	private double price;
