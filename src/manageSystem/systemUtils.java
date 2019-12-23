@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 public class systemUtils implements manageSystem{
@@ -120,20 +121,47 @@ public class systemUtils implements manageSystem{
 		System.out.println("1 : Continue shopping\n2 : Delete items.");
 		try(Scanner input = new Scanner(System.in);){
 			int choice = input.nextInt();
-			if(choice == 1) 
+			if(choice == 1) buyItems(); 
+			else deleteItems();
 		}catch(Exception e) {
 			System.out.println("Invalid input");
 			e.printStackTrace();
 		}
+	}
+	
+	/*
+	 * Ask for information to delete items in shopping cart
+	 */
+	private void deleteItems() {
+		System.out.println("------Item List------");
+		for(Entry<String, item> one:itemTable.entrySet()) {
+			System.out.println(one.getValue());
+		}
+		System.out.println("Which one you want to delete? input its name:");
+		Scanner input = new Scanner(System.in);
+		String itemName = input.next();
+		System.out.println("How many you want to delete?");
+		int amount = input.nextInt();
 		
-		
+		// Compare item amount with the number user want to delete
+		if(!shopCart.containsKey(itemName)) System.out.println("No such items!");
+		else if(shopCart.containsKey(itemName) && shopCart.get(itemName) <= amount) System.out.println("Invalid amount!");
+		else {
+			updateTables(itemName,amount);
+			System.out.println("Items deleted successfully!");
+			printItems();
+		}
+		input.close();
 	}
 	
 	/*
 	 * add items into shopping cart
 	 */
 	private void buyItems() {
-		!!这里要加打印所有商品的列表
+		System.out.println("------Item List------");
+		for(Entry<String, item> one:itemTable.entrySet()) {
+			System.out.println(one.getValue());
+		}
 		
 		System.out.println("Which one you want to buy? input its name:");
 		Scanner input = new Scanner(System.in);
@@ -149,9 +177,23 @@ public class systemUtils implements manageSystem{
 		
 		else if(itemTable.containsKey(itemName) && itemTable.get(itemName).getAmount() < totalNum) System.out.println("No enough items!");
 		else {
+			updateTables(itemName, amount);
 			System.out.println("Items added successfully!");
+			printItems();
 		}
-		
+		input.close();
+	}
+	
+	/*
+	 * input item name and update value(from delete function or add function)
+	 * then update item Hash table
+	 */
+	private void updateTables(String itemName, int amount) {
+		itemTable.get(itemName).setAmount(itemTable.get(itemName).getAmount() + amount);
+		if(!shopCart.containsKey(itemName)) shopCart.put(itemName, 0);
+		else {
+			shopCart.put(itemName, shopCart.get(itemName)+amount);
+		}
 	}
 	
 	
