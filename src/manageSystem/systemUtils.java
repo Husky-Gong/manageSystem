@@ -46,6 +46,76 @@ public class systemUtils implements manageSystem{
 		}
 	}
 	
+	
+	/*
+	 * input a user object as one parameter
+	 * check whether this user exists or not
+	 * serialize the new user object into the 'users' folder
+	 */
+	@Override
+	public void register() {
+		Scanner input = new Scanner(System.in);
+		
+		System.out.println("Your new username:");
+		String newName = input.next();
+		if(userTable.containsKey(newName)) System.out.println("This username exists!");
+		else {
+			File finalPath = new File(new File("users"),newName);
+			System.out.println("your Password:");
+			String password = input.next();
+			System.out.println("Your age:");
+			int age = input.nextInt();
+			
+			user newUser = new user(userTable.size()+1,newName,password,age);
+			
+			try{
+				writeUserObj(newUser, finalPath);}
+			catch(Exception e) {
+				e.printStackTrace();
+				}
+			}
+		
+		input.close();
+		}
+	
+	
+	private static void writeUserObj(user newUser, File finalPath) throws IOException {
+		try(FileOutputStream fileOut = new FileOutputStream(finalPath);
+				ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
+				){
+			objOut.writeObject(newUser);
+		}
+	}
+	
+	
+	/*
+	 * Ask for user information
+	 * (we can use the userTable to help us check user object)
+	 * 1. check userName
+	 * 2. check password
+	 * 3. return true or false
+	 */
+	@Override
+	public boolean login() {
+		@SuppressWarnings("resource")
+		Scanner input = new Scanner(System.in);
+		System.out.println("Your username: ");
+		String userName = input.next();
+		System.out.println("Your password: ");
+		String passWord = input.next();
+		
+		if(userTable.containsKey(userName) && userTable.get(userName).getPassWord().equals(passWord)) {
+			System.out.println("Login successfully.");
+			return true;
+		}
+		else {
+			System.out.println("Wrong userName or passWord!");
+			return false;
+		}
+		
+	}
+	
+	
 	@SuppressWarnings("unchecked")
 	private static <T> T getObj(String filePath) {
 		try(FileInputStream fileIn = new FileInputStream(filePath);
@@ -58,57 +128,6 @@ public class systemUtils implements manageSystem{
 		}
 	}
 	
-	private static void writeUserObj(user newUser, File finalPath) throws IOException {
-		try(FileOutputStream fileOut = new FileOutputStream(finalPath);
-				ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
-				){
-			objOut.writeObject(newUser);
-		}
-	}
-	
-	/*
-	 * input a user object as one parameter
-	 * check whether this user exists or not
-	 * serialize the new user object into the 'users' folder
-	 */
-	@Override
-	public void register(user newUser) {
-		String newUserName = newUser.getUserName();
-		if(userTable.containsKey(newUserName)) System.out.println("This username exists!");
-		else {
-			File finalPath = new File(new File("users"),newUser.getUserName());
-			try{
-				writeUserObj(newUser, finalPath);}
-			catch(Exception e) {
-				e.printStackTrace();
-				}
-			}
-		}
-	
-	
-	/*
-	 * Ask for user information
-	 * (we can use the userTable to help us check user object)
-	 * 1. check userName
-	 * 2. check password
-	 * 3. return true or false
-	 */
-	@Override
-	public void login() {
-		Scanner input = new Scanner(System.in);
-		System.out.println("Your username: ");
-		String userName = input.next();
-		System.out.println("Your password: ");
-		String passWord = input.next();
-		
-		if(userTable.containsKey(userName) && userTable.get(userName).getPassWord().equals(passWord)) {
-			System.out.println("Login successfully.");
-		}
-		else {
-			System.out.println("Wrong userName or passWord!");
-		}
-		input.close();
-	}
 	
 	/*
 	 * print items in shopping cart and 
@@ -117,8 +136,8 @@ public class systemUtils implements manageSystem{
 	 */
 	@Override
 	public void shopCart() {
-		printItems();
-		System.out.println("1 : Continue shopping\n2 : Delete items.");
+		printItemsTable();
+		System.out.println("1 : Shop.\n2 : Delete items.");
 		try(Scanner input = new Scanner(System.in);){
 			int choice = input.nextInt();
 			if(choice == 1) buyItems(); 
@@ -129,14 +148,11 @@ public class systemUtils implements manageSystem{
 		}
 	}
 	
+	
 	/*
 	 * Ask for information to delete items in shopping cart
 	 */
 	private void deleteItems() {
-		System.out.println("------Item List------");
-		for(Entry<String, item> one:itemTable.entrySet()) {
-			System.out.println(one.getValue());
-		}
 		System.out.println("Which one you want to delete? input its name:");
 		Scanner input = new Scanner(System.in);
 		String itemName = input.next();
@@ -149,20 +165,16 @@ public class systemUtils implements manageSystem{
 		else {
 			updateTables(itemName,amount);
 			System.out.println("Items deleted successfully!");
-			printItems();
 		}
 		input.close();
+		printShopCart();
 	}
+	
 	
 	/*
 	 * add items into shopping cart
 	 */
 	private void buyItems() {
-		System.out.println("------Item List------");
-		for(Entry<String, item> one:itemTable.entrySet()) {
-			System.out.println(one.getValue());
-		}
-		
 		System.out.println("Which one you want to buy? input its name:");
 		Scanner input = new Scanner(System.in);
 		String itemName = input.next();
@@ -179,9 +191,9 @@ public class systemUtils implements manageSystem{
 		else {
 			updateTables(itemName, amount);
 			System.out.println("Items added successfully!");
-			printItems();
 		}
 		input.close();
+		printShopCart();
 	}
 	
 	/*
@@ -201,8 +213,7 @@ public class systemUtils implements manageSystem{
 	 * Print all items in user's shopping cart
 	 * Print total price
 	 */
-	@Override
-	public void printItems() {
+	private void printShopCart() {
 		System.out.println("------Items in your shopping cart------");
 		double inTotal = 0.0;
 		for(Map.Entry<String, Integer> item: shopCart.entrySet()) {
@@ -212,9 +223,10 @@ public class systemUtils implements manageSystem{
 		System.out.println("Total Price : " + inTotal);
 	}
 	
-	@Override
-	public void purchaseItems(int price) {
-		
+	private void printItemsTable() {
+		System.out.println("------Items List------");
+		for(Entry<String, item> entry:itemTable.entrySet()) {
+			System.out.println(entry.getValue());
+		}
 	}
-
 }
