@@ -8,6 +8,13 @@ public class item implements Serializable{
 	private String itemName;
 	private int amount;
 	private double price;
+	
+	public item(String itemName2, int amount2, double price2) {
+		this.itemName = itemName2;
+		this.amount = amount2;
+		this.price = price2;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
