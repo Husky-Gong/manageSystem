@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Hashtable;
+import java.util.InputMismatchException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -21,7 +22,7 @@ public class systemUtils implements manageSystem{
 	static {
 		/*
 		 * 1. Check 'users'/'items' folder -- create or not?
-		 * 2. loop the 'users'/'items' folder and deserialize all users/items from every user/item file
+		 * 2. loop the 'users'/'items' folder and de-serialize all users/items from every user/item file
 		 * 3. get every user/item object and store into the 'userTable'/'itemTable' (Hashtable.put(key, value))
 		 */
 		File file = new File("users");
@@ -51,6 +52,7 @@ public class systemUtils implements manageSystem{
 			if(!file.exists()) {
 				file.mkdir();
 				user manager = new user(0, "manager", "abcdef", 30, true);
+				userTable.put("manager", manager);
 				writeObj(manager,new File(new File("users"),"manager"));
 			}
 			else {
@@ -90,32 +92,35 @@ public class systemUtils implements manageSystem{
 	public void register() {
 		@SuppressWarnings("resource")
 		Scanner input = new Scanner(System.in);
-		
-		System.out.println("Your new username:");
-		String newName = input.next();
-		if(userTable.containsKey(newName)) System.out.println("This username exists!");
-		else {
-			File finalPath = new File(new File("users"),newName);
-			System.out.println("your Password:");
-			String password = input.next();
-			System.out.println("Your age:");
-			int age = input.nextInt();
-			
-			user newUser = new user(userTable.size()+1,newName,password,age,false);
-			userTable.put(newName,newUser);
-			
-			try{
-				writeObj(newUser, finalPath);
+		try {
+			while(true) {
+				System.out.println("Your new username:");
+				String newName = input.next();
+				if(userTable.containsKey(newName)) 
+					System.out.println("This username exists! Please try again!");
+				else {
+					File finalPath = new File(new File("users"),newName);
+					System.out.println("your Password:");
+					String password = input.next();
+					System.out.println("Your age:");
+					int age = input.nextInt();
+					user newUser = new user(userTable.size()+1,newName,password,age,false);
+					userTable.put(newName,newUser);
+					writeObj(newUser, finalPath);
+					System.out.println("Regist successfully!");
+					break;
+				}
 			}
-		catch (IOException e) {
-			e.printStackTrace();
-			}
+		}
+		catch(InputMismatchException | IOException e) {
+			System.out.println("Invalid Input!Please try again!!");
 		}
 	}
 	
 	
 	private static <T> void writeObj(T object, File finalPath) throws IOException {
 		try(FileOutputStream fileOut = new FileOutputStream(finalPath);
+				
 				ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
 				){
 			objOut.writeObject(object);
@@ -131,25 +136,30 @@ public class systemUtils implements manageSystem{
 	 * 3. return true or false
 	 */
 	@Override
+	@SuppressWarnings("resource")
 	public boolean login() {
-		@SuppressWarnings("resource")
-		Scanner input = new Scanner(System.in);
-		System.out.println("Your username: ");
-		String userName = input.next();
-		System.out.println("Your password: ");
-		String passWord = input.next();
-		
-		if(userTable.containsKey(userName) && userTable.get(userName).getPassWord().equals(passWord)) {
-			System.out.println("Login successfully.");
-			// save current user
-			curUser = userName;
-			return true;
-		}
-		else {
-			System.out.println("Wrong userName or passWord!");
+		try {
+			Scanner input = new Scanner(System.in);
+			System.out.println("Your username: ");
+			String userName = input.next();
+			System.out.println("Your password: ");
+			String passWord = input.next();
+			
+			if(userTable.containsKey(userName) && userTable.get(userName).getPassWord().equals(passWord)) {
+				System.out.println("Login successfully.");
+				// save current user
+				curUser = userName;
+				return true;
+			}
+			else {
+				System.out.println("Wrong userName or passWord!");
+				return false;
+			}
+		}catch(InputMismatchException e) {
+			System.out.println("Invalid input!");
+			e.printStackTrace();
 			return false;
 		}
-		
 	}
 
 	
@@ -161,15 +171,28 @@ public class systemUtils implements manageSystem{
 	@Override
 	@SuppressWarnings("resource")
 	public void shopCart() {
-		while(true) {
-			printItemsTable();
-			Scanner input = new Scanner(System.in);
-			System.out.println("1 : Shop.\n2 : Cancel items.\n3. Manager Model.\n4. Exit.\n******************\n");
-			int choice = input.nextInt();
-			if(choice == 1) buyItems(); 
-			else if(choice == 2)cancelItems();
-			else if(choice == 3)managerModel();
-			else System.exit(0);
+		try {
+			while(true) {
+				Scanner input = new Scanner(System.in);
+				System.out.println("1 : Shop.\n2 : Cancel items.\n3. Manager Model.\n4. Home Page.\n5. Exit.\n******************\n");
+				int choice = input.nextInt();
+				if(choice == 1) buyItems(); 
+				else if(choice == 2)cancelItems();
+				else if(choice == 3)managerModel();
+				else if(choice == 4){
+					System.out.println("Back to home page...");
+					return;
+				}
+				else if(choice == 5){
+					System.out.println("Exit program.");
+					System.exit(0);
+				}
+				else {
+					System.out.println("Invalid input, please try again!");
+				}
+			}
+		}catch(InputMismatchException e) {
+			System.out.println("Invalid Input!");
 		}
 	}
 	
@@ -180,51 +203,57 @@ public class systemUtils implements manageSystem{
 	@SuppressWarnings("resource")
 	private void managerModel() {
 		Scanner input = new Scanner(System.in);
-		if(userTable.get(curUser).isManager()) {
-			while(true) {
-				printItemsTable();
-				System.out.println("------Manage Model------\n1. Add items\n2. Delete items\n3. Go back.");
-				int choice = input.nextInt();
-				if(choice == 1) addItems();
-				else if(choice == 2) deleteItems();
-				else break;
+		try {
+			if(userTable.get(curUser).isManager()) {
+				while(true) {
+					printItemsTable();
+					System.out.println("------Manage Model------\n1. Add items\n2. Delete items\n3. Go back.");
+					int choice = input.nextInt();
+					if(choice == 1) addItems();
+					else if(choice == 2) deleteItems();
+					else if(choice == 3) break;
+				}
 			}
-		}
-		else{
-			System.out.println("You are not a manager!");
+			else{
+				System.out.println("You are not a manager!");
+			}
+		}catch(InputMismatchException e) {
+			System.out.println("Invalid Input, please try again!");
+			return;
 		}
 		return;
 	}
 	
 	@SuppressWarnings("resource")
 	private void addItems() {
-		// Ask for item information
-		System.out.println("What items do you want to add? isert its name:");
-		Scanner input = new Scanner(System.in);
-		String itemName = input.next();
-		System.out.println("Items you want to add:(number)");
-		int amount = input.nextInt();
-		System.out.println("Price you want to increase:");
-		double price = input.nextDouble();
-		
-		File finalPath = new File(new File("items"),itemName);
-		item newItem;
-		
-		// Add new generated item into item's folder 
-		if(!itemTable.containsKey(itemName)) {
-			newItem = new item(itemName, amount, price);
-			}
-		else {
-			newItem = itemTable.get(itemName);
-			newItem.setAmount(amount + newItem.getAmount());
-			newItem.setPrice(price + newItem.getPrice());
-		}
-		
 		try {
+			// Ask for item information
+			System.out.println("What items do you want to add? isert its name:");
+			Scanner input = new Scanner(System.in);
+			String itemName = input.next();
+			System.out.println("Items you want to add:(number)");
+			int amount = input.nextInt();
+			System.out.println("Price you want to increase:");
+			double price = input.nextDouble();
+			
+			File finalPath = new File(new File("items"),itemName);
+			item newItem;
+			
+			// Add new generated item into item's folder 
+			if(!itemTable.containsKey(itemName)) {
+				newItem = new item(itemName, amount, price);
+				}
+			else {
+				newItem = itemTable.get(itemName);
+				newItem.setAmount(amount + newItem.getAmount());
+				newItem.setPrice(price + newItem.getPrice());
+			}
 			itemTable.put(itemName, newItem);
 			writeObj(newItem, finalPath);
-		} catch (IOException e) {
-			System.out.println("Error!");
+		
+			
+		} catch (InputMismatchException | IOException e) {
+			System.out.println("Invalid Input!");
 			e.printStackTrace();
 		}
 	}
@@ -232,58 +261,76 @@ public class systemUtils implements manageSystem{
 
 	@SuppressWarnings("resource")
 	private void deleteItems() {
-		// Ask for item information
-		System.out.println("What items do you want to delete? isert its name:");
-		Scanner input = new Scanner(System.in);
-		String itemName = input.next();
-		System.out.println("items you want to delete:(number)");
-		int amount = input.nextInt();
-		System.out.println("Price you want to decrease:");
-		double price = input.nextDouble();
-		
-		File finalPath = new File(new File("items"),itemName);
-		item newItem;
-		
-		// Add new generated item into item's folder 
-		if(!itemTable.containsKey(itemName)) {
-			System.out.println("No such Items!");
-			return;
-			}
-		else {
-			newItem = itemTable.get(itemName);
-			newItem.setAmount(newItem.getAmount() - amount);
-			newItem.setPrice(newItem.getPrice() - price);
-		}
-		
 		try {
-			if(newItem.getAmount() <= 0) finalPath.delete();
+			if(itemTable.isEmpty()) {
+				System.out.println("No items in the list!");
+				return;
+			}
+			// Ask for item information
+			System.out.println("What items do you want to delete? isert its name:");
+			Scanner input = new Scanner(System.in);
+			String itemName = input.next();
+			System.out.println("items you want to delete:(number)");
+			int amount = input.nextInt();
+			System.out.println("Price you want to decrease:");
+			double price = input.nextDouble();
+			
+			File finalPath = new File(new File("items"),itemName);
+			item newItem;
+			
+			// Add new generated item into item's folder 
+			if(!itemTable.containsKey(itemName)) {
+				System.out.println("No such Items!");
+				return;
+				}
+			else {
+				newItem = itemTable.get(itemName);
+				newItem.setAmount(newItem.getAmount() - amount);
+				newItem.setPrice(newItem.getPrice() - price);
+			}
 			writeObj(newItem, finalPath);
-		} catch (IOException e) {
-			System.out.println("Error!");
+			if(newItem.getAmount() <= 0) {
+				finalPath.delete();
+				itemTable.remove(newItem.getItemName());
+			}
+			
+		} catch (InputMismatchException | IOException e) {
+			System.out.println("Invalid Input!!");
 			e.printStackTrace();
 		}
 		
 	}
+	
 
 	/*
 	 * Ask for information to delete items in shopping cart
 	 */
 	@SuppressWarnings("resource")
 	private void cancelItems() {
-		System.out.println("Which one you want to delete? input its name:");
-		Scanner input = new Scanner(System.in);
-		String itemName = input.next();
-		System.out.println("How many you want to delete?");
-		int amount = input.nextInt();
-		
-		// Compare item amount with the number user want to delete
-		if(!shopCart.containsKey(itemName)) System.out.println("No such items!");
-		else if(shopCart.containsKey(itemName) && shopCart.get(itemName) <= amount) System.out.println("Invalid amount!");
-		else {
-			updateTables(itemName,-amount);
-			System.out.println("Items deleted successfully!");
+		try {
+			if(shopCart.isEmpty()) {
+				System.out.println("Nothing in your shopping cart, please add something!");
+				return;
+			}
+			printShopCart();
+			System.out.println("Which one you want to delete? input its name:");
+			Scanner input = new Scanner(System.in);
+			String itemName = input.next();
+			System.out.println("How many you want to delete?");
+			int amount = input.nextInt();
+			
+			// Compare item amount with the number user want to delete
+			if(!shopCart.containsKey(itemName)) System.out.println("No such items!");
+			else if(shopCart.containsKey(itemName) && shopCart.get(itemName) <= amount) System.out.println("Invalid amount!");
+			else {
+				updateTables(itemName,-amount);
+				System.out.println("Items deleted successfully!");
+			}
+			printShopCart();
+		}catch(InputMismatchException e) {
+			System.out.println("Invalid Input!!");
+			e.printStackTrace();
 		}
-		printShopCart();
 	}
 	
 	
@@ -292,31 +339,42 @@ public class systemUtils implements manageSystem{
 	 */
 	@SuppressWarnings("resource")
 	private void buyItems() {
-		System.out.println("Which one you want to buy? input its name:");
-		Scanner input = new Scanner(System.in);
-		String itemName = input.next();
-		System.out.println("How many you want?");
-		int amount = input.nextInt();
-		
-		// get total number of one item in shopping cart and 
-		// check whether has enough items to sell
-		int totalNum;
-		if(shopCart.get(itemName)==null) 
-			totalNum = 0 + amount;
-		else 
-			totalNum = shopCart.get(itemName) + amount;
-
-		if(!itemTable.containsKey(itemName)) 
-			System.out.println("No such item!");
-		
-		else if(itemTable.containsKey(itemName) && itemTable.get(itemName).getAmount() < totalNum) 
-			System.out.println("No enough items!");
-		else {
-			updateTables(itemName, amount);
-			System.out.println("Items added successfully!");
+		try {
+			if(itemTable.isEmpty()) {
+				System.out.println("Nothing here!! Please contact manager to add items~!~!");
+				return;
+			}
+			printItemsTable();
+			System.out.println("Which one you want to buy? input its name:");
+			Scanner input = new Scanner(System.in);
+			String itemName = input.next();
+			System.out.println("How many you want?");
+			int amount = input.nextInt();
+			
+			// get total number of one item in shopping cart and 
+			// check whether has enough items to sell
+			int totalNum;
+			if(shopCart.get(itemName)==null) 
+				totalNum = 0 + amount;
+			else 
+				totalNum = shopCart.get(itemName) + amount;
+	
+			if(!itemTable.containsKey(itemName)) 
+				System.out.println("No such item!");
+			
+			else if(itemTable.containsKey(itemName) && itemTable.get(itemName).getAmount() < totalNum) 
+				System.out.println("No enough items!");
+			else {
+				updateTables(itemName, amount);
+				System.out.println("Items added successfully!");
+			}
+			printShopCart();
+		}catch(InputMismatchException e) {
+			System.out.println("Invalid Input!!");
+			e.printStackTrace();
 		}
-		printShopCart();
 	}
+	
 	
 	/*
 	 * input item name and update value(from delete function or add function)
@@ -358,6 +416,7 @@ public class systemUtils implements manageSystem{
 		}
 		System.out.println("Total Price : " + inTotal);
 	}
+	
 	
 	private void printItemsTable() {
 		System.out.println("------Items List------");

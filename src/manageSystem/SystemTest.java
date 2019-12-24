@@ -5,6 +5,7 @@ import java.util.Scanner;
 public class SystemTest {
 	public static void main(String[] args) {
 		Scanner input = new Scanner(System.in);
+		
 		try {
 			systemUtils utl = new systemUtils();
 			
@@ -14,7 +15,7 @@ public class SystemTest {
 				if(choice == 1) utl.register();
 				
 				else if(choice ==2) {
-					if(utl.login()) break;
+					if(utl.login()) utl.shopCart();;
 				}
 				
 				else {
@@ -22,7 +23,6 @@ public class SystemTest {
 					System.exit(0);
 				}
 			}
-			utl.shopCart();
 		}finally {
 			input.close();
 		}
